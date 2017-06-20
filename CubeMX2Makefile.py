@@ -30,7 +30,7 @@ mcu_regex_to_cflags_dict = {
 }
 
 def main():
-    
+
     if len(sys.argv) != 2:
         sys.stderr.write("\nSTM32CubeMX project to Makefile V2.0\n")
         sys.stderr.write("-==================================-\n")
@@ -126,8 +126,8 @@ def main():
                             if path_tok == relpath_split[0]:
                                 s['inc_subst'] += path_tok
                             else:
-                                s['inc_subst'] += '/' + path_tok         
-                    
+                                s['inc_subst'] += '/' + path_tok
+
     # .cproject file
     try:
         tree = xml.etree.ElementTree.parse(ac6_cproject_path)
@@ -183,7 +183,7 @@ def main():
         sys.stderr.write("Unable to find link specs. Error: {}\n".format(str(e)))
         sys.exit(C2M_ERR_PROJECT_FILE)
     specs_subst = specs
-    
+
     makefile_str = makefile_template.substitute(
         TARGET = proj_name,
         MCU = cflags_subst,
@@ -197,6 +197,11 @@ def main():
         LDSCRIPT = ld_script_subst,
         SPECS = specs_subst)
 
+    # Fix \\(\\(weak\\)\\) and \\(\\(packed\\)\\)
+    # oroginal recepie http://wiki.sgmk-ssam.ch/wiki/STM32_dev
+    makefile_str = makefile_str.replace('\\(\\(weak\\)\\)','((weak))')
+    makefile_str = makefile_str.replace('\\(\\(packed\\)\\)', '((packed))')
+
     makefile_path = os.path.join(proj_folder_path, 'Makefile')
     try:
         with open(makefile_path, 'wb') as f:
@@ -206,7 +211,7 @@ def main():
         sys.exit(C2M_ERR_IO)
 
     sys.stdout.write("Makefile created: {}\n".format(makefile_path))
-    
+
     sys.exit(C2M_ERR_SUCCESS)
 
 
